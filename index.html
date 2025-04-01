@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autocomplete with Keyboard Navigation</title>
+    <style>
+        /* styles.css */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .autocomplete-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .autocomplete-list {
+            border: 1px solid #ccc;
+            border-top: none;
+            max-height: 150px;
+            overflow-y: auto;
+            position: absolute;
+            width: 100%;
+            background-color: #fff;
+            z-index: 100;
+            display: none;
+            border-radius: 4px;
+        }
+
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #f1f1f1;
+        }
+
+        .autocomplete-item.active {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="autocomplete-container">
+        <label for="autocomplete">Search:</label>
+        <input type="text" id="autocomplete" name="autocomplete" placeholder="Start typing...">
+        <div id="autocomplete-list" class="autocomplete-list"></div>
+    </div>
+
+    <script>
+        // script.js
+        const suggestions = [
+            "Apple", "Banana", "Blueberry", "Blackberry", "Coconut", "Cherry",
+            "Cantaloupe", "Date", "Dragonfruit", "Elderberry", "Fig", "Grape",
+            "Honeydew", "Indian Fig", "Jackfruit", "Kiwi", "Lemon", "Lime",
+            "Mango", "Orange", "Papaya", "Peach", "Pear", "Plum", "Pineapple",
+            "Raspberry", "Strawberry", "Watermelon"
+        ];
+
+        const input = document.getElementById('autocomplete');
+        const autocompleteList = document.getElementById('autocomplete-list');
+        let activeIndex = -1; // Index of the currently active suggestion
+
+        // Function to filter suggestions based on input
+        function filterSuggestions(query) {
+            if (!query) {
+                autocompleteList.innerHTML = '';
+                autocompleteList.style.display = 'none';
+                return;
+            }
+
+            const filtered = suggestions.filter(item => item.toLowerCase().includes(query.toLowerCase()));
+            displaySuggestions(filtered);
+        }
+
+        // Function to display the filtered suggestions
+        function displaySuggestions(filtered) {
+            autocompleteList.innerHTML = '';
+            if (filtered.length === 0) {
+                autocompleteList.style.display = 'none';
+                return;
+            }
+
+            filtered.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.classList.add('autocomplete-item');
+                div.textContent = item;
+
+                // Highlight the active item
+                if (index === activeIndex) {
+                    div.classList.add('active');
+                }
+
+                div.addEventListener('click', () => {
+                    input.value = item;
+                    console.log("Selected:", item);  // Log the selected item to the console
+                    autocompleteList.innerHTML = '';
+                    autocompleteList.style.display = 'none';
+                });
+
+                autocompleteList.appendChild(div);
+            });
+
+            autocompleteList.style.display = 'block';
+        }
+
+        // Event listeners
+        input.addEventListener('input', () => {
+            activeIndex = -1; // Reset the active index when new input is typed
+            filterSuggestions(input.value);
+        });
+
+        input.addEventListener('focus', () => {
+            if (input.value) {
+                autocompleteList.style.display = 'block';
+            }
+        });
+
+        input.addEventListener('blur', () => {
+            setTimeout(() => {
+                autocompleteList.style.display = 'none';
+            }, 200);
+        });
+
+        // Keyboard navigation functionality
+        input.addEventListener('keydown', (e) => {
+            const items = document.querySelectorAll('.autocomplete-item');
+
+            if (e.key === 'ArrowDown') {
+                // Move down through the list
+                activeIndex = (activeIndex + 1) % items.length;
+                updateActiveItem();
+                e.preventDefault();
+            } else if (e.key === 'ArrowUp') {
+                // Move up through the list
+                activeIndex = (activeIndex - 1 + items.length) % items.length;
+                updateActiveItem();
+                e.preventDefault();
+            } else if (e.key === 'Enter') {
+                // Select the active item
+                if (activeIndex >= 0 && activeIndex < items.length) {
+                    input.value = items[activeIndex].textContent;
+                    console.log("Selected:", items[activeIndex].textContent); // Log to console
+                    autocompleteList.innerHTML = '';
+                    autocompleteList.style.display = 'none';
+                }
+            }
+        });
+
+        // Function to update the active class on the selected item
+        function updateActiveItem() {
+            const items = document.querySelectorAll('.autocomplete-item');
+            items.forEach(item => item.classList.remove('active')); // Remove active class from all items
+            if (activeIndex >= 0 && activeIndex < items.length) {
+                items[activeIndex].classList.add('active'); // Add active class to the selected item
+            }
+        }
+
+    </script>
+</body>
+
+</html>
